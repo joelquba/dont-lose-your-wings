@@ -28,19 +28,138 @@
 </head>
 <body>
   <nav class="navbar navbar-dlyw px-3 py-2 mb-4">
-    <span class="navbar-brand mb-0 h1 fw-bold">Don't Lose Your Wings</span>
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1 fw-bold">Don't Lose Your Wings</span>
+      <div id="nav-user" class="d-none align-items-center gap-2">
+        <span id="user-email" class="small fw-semibold"></span>
+        <button id="btn-logout" type="button" class="btn btn-sm btn-outline-dark">Sortir</button>
+      </div>
+    </div>
   </nav>
 
-  <main class="container py-4">
-    <div class="card border-0 shadow-sm p-4 rounded-4">
-      <h1 class="h3 mb-2">Benvinguda i benvingut a DLYW</h1>
-      <p class="text-muted mb-4">
-        Centralitza els teus viatges, allotjaments i llocs per visitar en un sol lloc[cite: 4].
+  <main class="container py-3" style="max-width: 720px;">
+    <div id="alert-box" class="alert d-none" role="alert"></div>
+
+    <!-- VISTA 1: AUTENTICACIÓ -->
+    <section id="auth-view" class="card border-0 shadow-sm p-4 rounded-4">
+      <h1 class="h4 mb-1">Benvinguda i benvingut a DLYW</h1>
+      <p class="text-muted small mb-4">
+        Centralitza els teus viatges, allotjaments i llocs per visitar en un sol lloc.
       </p>
-      <button type="button" class="btn btn-dlyw" onclick="alert('Connexió base a punt!')">
-        + Nou viatge[cite: 12]
-      </button>
-    </div>
+
+      <div class="mb-3">
+        <label for="auth-nom" class="form-label">Nom (només per registrar-se)</label>
+        <input id="auth-nom" type="text" class="form-control" placeholder="Ex. Laia" />
+      </div>
+      <div class="mb-3">
+        <label for="auth-email" class="form-label">Correu electrònic</label>
+        <input id="auth-email" type="email" class="form-control" required placeholder="correu@exemple.cat" />
+      </div>
+      <div class="mb-4">
+        <label for="auth-password" class="form-label">Contrasenya (mínim 8 caràcters)</label>
+        <input id="auth-password" type="password" class="form-control" required minlength="8" />
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <button id="btn-login" type="button" class="btn btn-dlyw">Iniciar sessió</button>
+        <button id="btn-register" type="button" class="btn btn-outline-secondary">Registrar-se</button>
+      </div>
+    </section>
+
+    <!-- VISTA 2: ELS MEUS VIATGES -->
+    <section id="app-view" class="d-none">
+      <div class="card border-0 shadow-sm p-4 rounded-4 mb-4">
+        <h1 id="welcome-title" class="h4 mb-1">Hola!</h1>
+        <p class="text-muted small mb-0">Sessió iniciada correctament. A punt per gestionar els teus viatges.</p>
+      </div>
+    </section>
   </main>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://dlhbjxkhwtxploxnkbxc.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_AWirKMAydblzImSNJM8FHg_KzQujgZ_'; // Revisa que coincida exacta con tu Publishable key
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const authView = document.getElementById('auth-view');
+    const appView = document.getElementById('app-view');
+    const navUser = document.getElementById('nav-user');
+    const userEmailEl = document.getElementById('user-email');
+    const welcomeTitle = document.getElementById('welcome-title');
+    const alertBox = document.getElementById('alert-box');
+
+    function showAlert(message, type = 'danger') {
+      alertBox.textContent = message;
+      alertBox.className = `alert alert-${type}`;
+    }
+
+    function hideAlert() {
+      alertBox.className = 'alert d-none';
+      alertBox.textContent = '';
+    }
+
+    function updateUI(session) {
+      if (session?.user) {
+        authView.classList.add('d-none');
+        appView.classList.remove('d-none');
+        navUser.classList.remove('d-none');
+        navUser.classList.add('d-flex');
+        userEmailEl.textContent = session.user.email;
+        const nom = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+        welcomeTitle.textContent = `Hola, ${nom}!`;
+      } else {
+        appView.classList.add('d-none');
+        navUser.classList.add('d-none');
+        navUser.classList.remove('d-flex');
+        authView.classList.remove('d-none');
+        userEmailEl.textContent = '';
+      }
+    }
+
+    document.getElementById('btn-register').addEventListener('click', async () => {
+      hideAlert();
+      const nom = document.getElementById('auth-nom').value.trim();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+
+      if (password.length < 8) {
+        return showAlert('La contrasenya ha de tenir com a mínim 8 caràcters.');
+      }
+
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: nom || email.split('@')[0] } }
+      });
+
+      if (error) return showAlert(error.message);
+      showAlert('Registre completat! Ja pots iniciar sessió (o revisa el correu si cal confirmar-lo).', 'success');
+    });
+
+    document.getElementById('btn-login').addEventListener('click', async () => {
+      hideAlert();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return showAlert('Credencials incorrectes o compte no verificat.');
+      updateUI(data.session);
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      hideAlert();
+      await supabase.auth.signOut();
+      updateUI(null);
+    });
+
+    const { data: { session } } = await supabase.auth.getSession();
+    updateUI(session);
+
+    supabase.auth.onAuthStateChange((_event, currentSession) => {
+      updateUI(currentSession);
+    });
+  </script>
 </body>
 </html>
