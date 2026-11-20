@@ -29,7 +29,7 @@
 <body>
   <nav class="navbar navbar-dlyw px-3 py-2 mb-4">
     <div class="container">
-      <span class="navbar-brand mb-0 h1 fw-bold">Don't Lose Your Wings</span>
+      <span class="navbar-brand mb-0 h1 fw-bold" style="cursor:pointer;" id="brand-home">Don't Lose Your Wings</span>
       <div id="nav-user" class="d-none align-items-center gap-2">
         <span id="user-email" class="small fw-semibold d-none d-sm-inline"></span>
         <button id="btn-logout" type="button" class="btn btn-sm btn-outline-dark">Sortir</button>
@@ -37,14 +37,14 @@
     </div>
   </nav>
 
-  <main class="container pb-5" style="max-width: 900px;">
+  <main class="container pb-5" style="max-width: 960px;">
     <div id="alert-box" class="alert d-none" role="alert"></div>
 
     <!-- VISTA 1: AUTENTICACIÓ -->
     <section id="auth-view" class="card border-0 shadow-sm p-4 rounded-4 mx-auto" style="max-width: 540px;">
       <h1 class="h4 mb-1">Benvinguda i benvingut a DLYW</h1>
       <p class="text-muted small mb-4">
-        Centralitza els teus viatges, allotjaments i llocs per visitar en un sol lloc[cite: 4].
+        Centralitza els teus viatges, allotjaments i llocs per visitar en un sol lloc.
       </p>
 
       <div class="mb-3">
@@ -71,12 +71,11 @@
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
           <h1 id="welcome-title" class="h3 mb-1">Hola!</h1>
-          <p class="text-muted small mb-0">Gestiona els teus viatges programats[cite: 5].</p>
+          <p class="text-muted small mb-0">Gestiona els teus viatges programats.</p>
         </div>
         <button id="btn-toggle-form" type="button" class="btn btn-dlyw">+ Nou viatge</button>
       </div>
 
-      <!-- Cercador per destinació -->
       <div class="card border-0 shadow-sm p-3 rounded-4 mb-4">
         <div class="row g-2 align-items-center">
           <div class="col-sm-9">
@@ -89,7 +88,6 @@
         </div>
       </div>
 
-      <!-- Formulari Crear / Editar viatge -->
       <div id="viatge-form-card" class="card border-0 shadow-sm p-4 rounded-4 mb-4 d-none">
         <h2 id="form-title" class="h5 mb-3">Nou viatge</h2>
         <form id="viatge-form" novalidate>
@@ -119,8 +117,95 @@
         </form>
       </div>
 
-      <!-- Llistat dinàmic de viatges -->
       <div id="viatges-list" class="row g-3"></div>
+    </section>
+
+    <!-- VISTA 3: DETALL DEL VIATGE -->
+    <section id="detail-view" class="d-none">
+      <button id="btn-back-viatges" type="button" class="btn btn-sm btn-outline-dark mb-3">← Tornar als meus viatges</button>
+
+      <div class="card border-0 shadow-sm p-4 rounded-4 mb-4">
+        <h1 id="detail-titol" class="h3 mb-1"></h1>
+        <p id="detail-meta" class="text-muted mb-3"></p>
+        <div id="detail-resum" class="row g-2 small"></div>
+      </div>
+
+      <div class="row g-4">
+        <!-- ALLOTJAMENTS -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm p-4 rounded-4">
+            <h2 class="h5 mb-3">Allotjaments</h2>
+            <form id="allotjament-form" class="mb-4">
+              <div class="mb-2">
+                <label for="allot-nom" class="form-label small">Nom de l’allotjament</label>
+                <input id="allot-nom" type="text" class="form-control form-control-sm" required placeholder="Ex. Hotel Baixa" />
+              </div>
+              <div class="mb-2">
+                <label for="allot-adreca" class="form-label small">Adreça</label>
+                <input id="allot-adreca" type="text" class="form-control form-control-sm" required placeholder="Ex. Rua Augusta 120" />
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-6">
+                  <label for="allot-entrada" class="form-label small">Data entrada</label>
+                  <input id="allot-entrada" type="date" class="form-control form-control-sm" required />
+                </div>
+                <div class="col-6">
+                  <label for="allot-sortida" class="form-label small">Data sortida</label>
+                  <input id="allot-sortida" type="date" class="form-control form-control-sm" required />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="allot-preu" class="form-label small">Preu total (€)</label>
+                <input id="allot-preu" type="number" step="0.01" min="0" class="form-control form-control-sm" required value="0.00" />
+              </div>
+              <button type="submit" class="btn btn-sm btn-dlyw">+ Afegir allotjament</button>
+            </form>
+            <div id="allotjaments-list" class="d-flex flex-column gap-2"></div>
+          </div>
+        </div>
+
+        <!-- LLOCS PER VISITAR -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm p-4 rounded-4">
+            <h2 class="h5 mb-3">Llocs per visitar</h2>
+            <form id="lloc-form" class="mb-3">
+              <div class="mb-2">
+                <label for="lloc-nom" class="form-label small">Nom del lloc</label>
+                <input id="lloc-nom" type="text" class="form-control form-control-sm" required placeholder="Ex. Miradouro de Santa Luzia" />
+              </div>
+              <div class="mb-2">
+                <label for="lloc-categoria" class="form-label small">Categoria</label>
+                <select id="lloc-categoria" class="form-select form-select-sm">
+                  <option value="Cultura">Cultura</option>
+                  <option value="Gastronomia">Gastronomia</option>
+                  <option value="Natura">Natura</option>
+                  <option value="Oci">Oci</option>
+                  <option value="Altres">Altres</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="lloc-notes" class="form-label small">Notes</label>
+                <textarea id="lloc-notes" rows="2" class="form-control form-control-sm" placeholder="Recomanacions, horaris..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-sm btn-dlyw">+ Afegir lloc</button>
+            </form>
+
+            <div class="mb-3">
+              <label for="filter-categoria" class="form-label small">Filtra per categoria</label>
+              <select id="filter-categoria" class="form-select form-select-sm">
+                <option value="Totes">Totes les categories</option>
+                <option value="Cultura">Cultura</option>
+                <option value="Gastronomia">Gastronomia</option>
+                <option value="Natura">Natura</option>
+                <option value="Oci">Oci</option>
+                <option value="Altres">Altres</option>
+              </select>
+            </div>
+
+            <div id="llocs-list" class="d-flex flex-column gap-2"></div>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -134,6 +219,7 @@
 
     const authView = document.getElementById('auth-view');
     const appView = document.getElementById('app-view');
+    const detailView = document.getElementById('detail-view');
     const navUser = document.getElementById('nav-user');
     const userEmailEl = document.getElementById('user-email');
     const welcomeTitle = document.getElementById('welcome-title');
@@ -143,9 +229,11 @@
     const viatgeForm = document.getElementById('viatge-form');
     const formTitle = document.getElementById('form-title');
     const searchInput = document.getElementById('search-destinacio');
+    const filterCategoria = document.getElementById('filter-categoria');
 
     let currentSession = null;
-    let viatgesCache = [];
+    let activeViatgeId = null;
+    let activeLlocsCache = [];
 
     function showAlert(message, type = 'danger') {
       alertBox.textContent = message;
@@ -156,6 +244,15 @@
     function hideAlert() {
       alertBox.className = 'alert d-none';
       alertBox.textContent = '';
+    }
+
+    function showView(viewName) {
+      authView.classList.add('d-none');
+      appView.classList.add('d-none');
+      detailView.classList.add('d-none');
+      if (viewName === 'auth') authView.classList.remove('d-none');
+      if (viewName === 'app') appView.classList.remove('d-none');
+      if (viewName === 'detail') detailView.classList.remove('d-none');
     }
 
     function openForm(viatge = null) {
@@ -229,7 +326,13 @@
         meta.textContent = `${v.destinacio} · ${v.data_inicial} → ${v.data_final}`;
 
         const actions = document.createElement('div');
-        actions.className = 'd-flex gap-2 mt-auto';
+        actions.className = 'd-flex flex-wrap gap-2 mt-auto';
+
+        const btnView = document.createElement('button');
+        btnView.type = 'button';
+        btnView.className = 'btn btn-sm btn-dlyw';
+        btnView.textContent = 'Veure';
+        btnView.addEventListener('click', () => openDetail(v.id));
 
         const btnEdit = document.createElement('button');
         btnEdit.type = 'button';
@@ -243,7 +346,7 @@
         btnDelete.textContent = 'Eliminar';
         btnDelete.addEventListener('click', () => deleteViatge(v));
 
-        actions.append(btnEdit, btnDelete);
+        actions.append(btnView, btnEdit, btnDelete);
         card.append(title, meta, actions);
         col.append(card);
         viatgesList.append(col);
@@ -254,8 +357,8 @@
       try {
         const filtro = encodeURIComponent(searchInput.value.trim());
         const query = filtro ? `?destinacio=${filtro}` : '';
-        viatgesCache = await apiRequest('GET', `/api/viatges${query}`);
-        renderViatges(viatgesCache);
+        const items = await apiRequest('GET', `/api/viatges${query}`);
+        renderViatges(items);
       } catch (err) {
         showAlert(err.message);
       }
@@ -274,6 +377,187 @@
         showAlert(err.message);
       }
     }
+
+    function renderLlocsFiltered() {
+      const container = document.getElementById('llocs-list');
+      container.innerHTML = '';
+      const cat = filterCategoria.value;
+      const items = cat === 'Totes'
+        ? activeLlocsCache
+        : activeLlocsCache.filter((l) => l.categoria === cat);
+
+      if (!items.length) {
+        container.innerHTML = '<p class="text-muted small mb-0">No hi ha cap lloc en aquesta categoria.</p>';
+        return;
+      }
+
+      for (const l of items) {
+        const box = document.createElement('div');
+        box.className = 'border rounded-3 p-2 bg-light-subtle';
+
+        const header = document.createElement('div');
+        header.className = 'd-flex justify-content-between align-items-start gap-2';
+
+        const info = document.createElement('div');
+        const nameEl = document.createElement('div');
+        nameEl.className = 'fw-semibold small';
+        nameEl.textContent = `${l.nom_lloc} (${l.categoria})`;
+
+        info.append(nameEl);
+        if (l.notes) {
+          const notesEl = document.createElement('div');
+          notesEl.className = 'text-muted small';
+          notesEl.textContent = l.notes;
+          info.append(notesEl);
+        }
+
+        const btnDel = document.createElement('button');
+        btnDel.type = 'button';
+        btnDel.className = 'btn btn-sm btn-outline-danger';
+        btnDel.textContent = 'Eliminar';
+        btnDel.addEventListener('click', async () => {
+          hideAlert();
+          try {
+            await apiRequest('DELETE', `/api/detall?recurs=lloc&id=${encodeURIComponent(l.id)}`);
+            showAlert('Lloc eliminat correctament.', 'success');
+            await openDetail(activeViatgeId);
+          } catch (err) {
+            showAlert(err.message);
+          }
+        });
+
+        header.append(info, btnDel);
+        box.append(header);
+        container.append(box);
+      }
+    }
+
+    async function openDetail(viatgeId) {
+      hideAlert();
+      activeViatgeId = viatgeId;
+      try {
+        const data = await apiRequest('GET', `/api/detall?viatge_id=${encodeURIComponent(viatgeId)}`);
+        showView('detail');
+
+        document.getElementById('detail-titol').textContent = data.viatge.titol;
+        document.getElementById('detail-meta').textContent =
+          `${data.viatge.destinacio} · ${data.viatge.data_inicial} → ${data.viatge.data_final}`;
+
+        const catsText = Object.entries(data.resum.llocs_per_categoria || {})
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(', ') || 'Cap';
+
+        document.getElementById('detail-resum').innerHTML = `
+          <div class="col-sm-4"><div class="p-2 rounded-3 bg-light"><strong>Nits del viatge:</strong> ${data.resum.nits_viatge}</div></div>
+          <div class="col-sm-4"><div class="p-2 rounded-3 bg-light"><strong>Cost allotjaments:</strong> ${data.resum.cost_total_allotjament.toFixed(2)} €</div></div>
+          <div class="col-sm-4"><div class="p-2 rounded-3 bg-light"><strong>Llocs (${data.resum.total_llocs}):</strong> ${catsText}</div></div>
+        `;
+
+        const allotList = document.getElementById('allotjaments-list');
+        allotList.innerHTML = '';
+        if (!data.allotjaments.length) {
+          allotList.innerHTML = '<p class="text-muted small mb-0">Encara no hi ha allotjaments registrats.</p>';
+        } else {
+          for (const a of data.allotjaments) {
+            const box = document.createElement('div');
+            box.className = 'border rounded-3 p-2 d-flex justify-content-between align-items-start gap-2';
+
+            const info = document.createElement('div');
+            info.className = 'small';
+            const nEl = document.createElement('div');
+            nEl.className = 'fw-semibold';
+            nEl.textContent = `${a.nom} · ${Number(a.preu).toFixed(2)} €`;
+            const dEl = document.createElement('div');
+            dEl.className = 'text-muted';
+            dEl.textContent = `${a.adreca} (${a.data_entrada} → ${a.data_sortida})`;
+            info.append(nEl, dEl);
+
+            const btnDel = document.createElement('button');
+            btnDel.type = 'button';
+            btnDel.className = 'btn btn-sm btn-outline-danger';
+            btnDel.textContent = 'Eliminar';
+            btnDel.addEventListener('click', async () => {
+              hideAlert();
+              if (!window.confirm(`Eliminar l’allotjament "${a.nom}"?`)) return;
+              try {
+                await apiRequest('DELETE', `/api/detall?recurs=allotjament&id=${encodeURIComponent(a.id)}`);
+                showAlert('Allotjament eliminat correctament.', 'success');
+                await openDetail(activeViatgeId);
+              } catch (err) {
+                showAlert(err.message);
+              }
+            });
+
+            box.append(info, btnDel);
+            allotList.append(box);
+          }
+        }
+
+        activeLlocsCache = data.llocs || [];
+        renderLlocsFiltered();
+      } catch (err) {
+        showAlert(err.message);
+      }
+    }
+
+    document.getElementById('allotjament-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+      try {
+        await apiRequest('POST', '/api/detall', {
+          recurs: 'allotjament',
+          viatge_id: activeViatgeId,
+          nom: document.getElementById('allot-nom').value.trim(),
+          adreca: document.getElementById('allot-adreca').value.trim(),
+          data_entrada: document.getElementById('allot-entrada').value,
+          data_sortida: document.getElementById('allot-sortida').value,
+          preu: document.getElementById('allot-preu').value
+        });
+        e.target.reset();
+        document.getElementById('allot-preu').value = '0.00';
+        showAlert('Allotjament afegit correctament.', 'success');
+        await openDetail(activeViatgeId);
+      } catch (err) {
+        showAlert(err.message);
+      }
+    });
+
+    document.getElementById('lloc-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+      try {
+        await apiRequest('POST', '/api/detall', {
+          recurs: 'lloc',
+          viatge_id: activeViatgeId,
+          nom_lloc: document.getElementById('lloc-nom').value.trim(),
+          categoria: document.getElementById('lloc-categoria').value,
+          notes: document.getElementById('lloc-notes').value.trim()
+        });
+        e.target.reset();
+        showAlert('Lloc afegit correctament.', 'success');
+        await openDetail(activeViatgeId);
+      } catch (err) {
+        showAlert(err.message);
+      }
+    });
+
+    filterCategoria.addEventListener('change', renderLlocsFiltered);
+
+    document.getElementById('btn-back-viatges').addEventListener('click', () => {
+      hideAlert();
+      activeViatgeId = null;
+      showView('app');
+      loadViatges();
+    });
+
+    document.getElementById('brand-home').addEventListener('click', () => {
+      if (currentSession?.user) {
+        hideAlert();
+        activeViatgeId = null;
+        showView('app');
+        loadViatges();
+      }
+    });
 
     viatgeForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -318,8 +602,7 @@
     function updateUI(session) {
       currentSession = session;
       if (session?.user) {
-        authView.classList.add('d-none');
-        appView.classList.remove('d-none');
+        showView('app');
         navUser.classList.remove('d-none');
         navUser.classList.add('d-flex');
         userEmailEl.textContent = session.user.email;
@@ -327,10 +610,9 @@
         welcomeTitle.textContent = `Hola, ${nom}!`;
         loadViatges();
       } else {
-        appView.classList.add('d-none');
         navUser.classList.add('d-none');
         navUser.classList.remove('d-flex');
-        authView.classList.remove('d-none');
+        showView('auth');
         userEmailEl.textContent = '';
         closeForm();
       }
