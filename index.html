@@ -31,6 +31,7 @@
     <div class="container">
       <span class="navbar-brand mb-0 h1 fw-bold" style="cursor:pointer;" id="brand-home">Don't Lose Your Wings</span>
       <div id="nav-user" class="d-none align-items-center gap-2">
+        <button id="btn-nav-admin" type="button" class="btn btn-sm btn-outline-dark d-none">Administració</button>
         <span id="user-email" class="small fw-semibold d-none d-sm-inline"></span>
         <button id="btn-logout" type="button" class="btn btn-sm btn-outline-dark">Sortir</button>
       </div>
@@ -131,7 +132,6 @@
       </div>
 
       <div class="row g-4">
-        <!-- ALLOTJAMENTS -->
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm p-4 rounded-4">
             <h2 class="h5 mb-3">Allotjaments</h2>
@@ -164,7 +164,6 @@
           </div>
         </div>
 
-        <!-- LLOCS PER VISITAR -->
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm p-4 rounded-4">
             <h2 class="h5 mb-3">Llocs per visitar</h2>
@@ -207,6 +206,16 @@
         </div>
       </div>
     </section>
+
+    <!-- VISTA 4: ADMINISTRACIÓ (ROL ADMIN) -->
+    <section id="admin-view" class="d-none">
+      <button id="btn-back-from-admin" type="button" class="btn btn-sm btn-outline-dark mb-3">← Tornar als meus viatges</button>
+      <div class="card border-0 shadow-sm p-4 rounded-4">
+        <h1 class="h4 mb-1">Administració d’usuaris</h1>
+        <p class="text-muted small mb-4">Llistat de comptes registrats i gestió d’eliminació.</p>
+        <div id="admin-users-list" class="d-flex flex-column gap-2"></div>
+      </div>
+    </section>
   </main>
 
   <script type="module">
@@ -220,7 +229,9 @@
     const authView = document.getElementById('auth-view');
     const appView = document.getElementById('app-view');
     const detailView = document.getElementById('detail-view');
+    const adminView = document.getElementById('admin-view');
     const navUser = document.getElementById('nav-user');
+    const btnNavAdmin = document.getElementById('btn-nav-admin');
     const userEmailEl = document.getElementById('user-email');
     const welcomeTitle = document.getElementById('welcome-title');
     const alertBox = document.getElementById('alert-box');
@@ -232,6 +243,7 @@
     const filterCategoria = document.getElementById('filter-categoria');
 
     let currentSession = null;
+    let currentRole = 'usuari';
     let activeViatgeId = null;
     let activeLlocsCache = [];
 
@@ -250,9 +262,30 @@
       authView.classList.add('d-none');
       appView.classList.add('d-none');
       detailView.classList.add('d-none');
+      adminView.classList.add('d-none');
       if (viewName === 'auth') authView.classList.remove('d-none');
       if (viewName === 'app') appView.classList.remove('d-none');
       if (viewName === 'detail') detailView.classList.remove('d-none');
+      if (viewName === 'admin') adminView.classList.remove('d-none');
+    }
+
+    async function refreshUserRole() {
+      if (!currentSession?.user) {
+        currentRole = 'usuari';
+        btnNavAdmin.classList.add('d-none');
+        return;
+      }
+      const { data } = await supabase
+        .from('profiles')
+        .select('rol')
+        .eq('id', currentSession.user.id)
+        .single();
+      currentRole = data?.rol || 'usuari';
+      if (currentRole === 'admin') {
+        btnNavAdmin.classList.remove('d-none');
+      } else {
+        btnNavAdmin.classList.add('d-none');
+      }
     }
 
     function openForm(viatge = null) {
@@ -500,6 +533,55 @@
       }
     }
 
+    async function openAdmin() {
+      hideAlert();
+      try {
+        const users = await apiRequest('GET', '/api/admin');
+        showView('admin');
+        const listEl = document.getElementById('admin-users-list');
+        listEl.innerHTML = '';
+
+        for (const u of users) {
+          const row = document.createElement('div');
+          row.className = 'border rounded-3 p-3 d-flex justify-content-between align-items-center gap-2';
+
+          const info = document.createElement('div');
+          const nameEl = document.createElement('div');
+          nameEl.className = 'fw-semibold small';
+          nameEl.textContent = `${u.nom} (${u.rol})`;
+          const mailEl = document.createElement('div');
+          mailEl.className = 'text-muted small';
+          mailEl.textContent = u.email;
+          info.append(nameEl, mailEl);
+
+          row.append(info);
+
+          if (u.id !== currentSession.user.id) {
+            const btnDel = document.createElement('button');
+            btnDel.type = 'button';
+            btnDel.className = 'btn btn-sm btn-outline-danger';
+            btnDel.textContent = 'Eliminar compte';
+            btnDel.addEventListener('click', async () => {
+              hideAlert();
+              if (!window.confirm(`Segur que vols eliminar el compte de ${u.email}?`)) return;
+              try {
+                await apiRequest('DELETE', `/api/admin?id=${encodeURIComponent(u.id)}`);
+                showAlert('Compte eliminat correctament.', 'success');
+                await openAdmin();
+              } catch (err) {
+                showAlert(err.message);
+              }
+            });
+            row.append(btnDel);
+          }
+
+          listEl.append(row);
+        }
+      } catch (err) {
+        showAlert(err.message);
+      }
+    }
+
     document.getElementById('allotjament-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       hideAlert();
@@ -542,6 +624,12 @@
     });
 
     filterCategoria.addEventListener('change', renderLlocsFiltered);
+    btnNavAdmin.addEventListener('click', openAdmin);
+    document.getElementById('btn-back-from-admin').addEventListener('click', () => {
+      hideAlert();
+      showView('app');
+      loadViatges();
+    });
 
     document.getElementById('btn-back-viatges').addEventListener('click', () => {
       hideAlert();
@@ -599,9 +687,10 @@
       loadViatges();
     });
 
-    function updateUI(session) {
+    async function updateUI(session) {
       currentSession = session;
       if (session?.user) {
+        await refreshUserRole();
         showView('app');
         navUser.classList.remove('d-none');
         navUser.classList.add('d-flex');
@@ -610,6 +699,8 @@
         welcomeTitle.textContent = `Hola, ${nom}!`;
         loadViatges();
       } else {
+        currentRole = 'usuari';
+        btnNavAdmin.classList.add('d-none');
         navUser.classList.add('d-none');
         navUser.classList.remove('d-flex');
         showView('auth');
@@ -645,20 +736,20 @@
 
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return showAlert('Credencials incorrectes o compte no verificat.');
-      updateUI(data.session);
+      await updateUI(data.session);
     });
 
     document.getElementById('btn-logout').addEventListener('click', async () => {
       hideAlert();
       await supabase.auth.signOut();
-      updateUI(null);
+      await updateUI(null);
     });
 
     const { data: { session } } = await supabase.auth.getSession();
-    updateUI(session);
+    await updateUI(session);
 
-    supabase.auth.onAuthStateChange((_event, currentSession) => {
-      updateUI(currentSession);
+    supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+      await updateUI(currentSession);
     });
   </script>
 </body>
