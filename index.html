@@ -1638,25 +1638,60 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const PHOTO_POOL = [
-      'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1400&q=85',
-      'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?auto=format&fit=crop&w=1400&q=85',
-      'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1400&q=85',
-      'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1400&q=85',
-      'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=1400&q=85',
-      'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1400&q=85'
+    const DEFAULT_PLANE_IMAGE =
+      'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1400&q=85';
+
+    const DESTINATION_PHOTOS = [
+      // Europa Occidental y Mediterráneo
+      { keys: ['barcelona', 'sabadell', 'catalunya', 'cataluña'], url: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['madrid'], url: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['sevilla', 'andalucia', 'andalucía', 'puerto de santa maria', 'puerto de santa maría'], url: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['valencia', 'valència', 'alicante', 'alacant'], url: 'https://images.unsplash.com/photo-1562883676-8c7feb83f09b?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['bilbao', 'san sebastian', 'san sebastián', 'donostia', 'pais basc', 'país vasco'], url: 'https://images.unsplash.com/photo-1565402170291-8491f14678db?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['mallorca', 'palma', 'tramuntana', 'soller', 'sóller', 'fornalutx', 'deia', 'deià'], url: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['menorca', 'eivissa', 'ibiza', 'formentera', 'balears', 'illes balears'], url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['tenerife', 'gran canaria', 'lanzarote', 'fuerteventura', 'canaries', 'canarias'], url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['lisboa', 'lisbon'], url: 'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['porto', 'oporto', 'algarve', 'portugal'], url: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['paris', 'parís', 'frança', 'francia', 'niça', 'niza', 'nice', 'lyon'], url: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['londres', 'london', 'edimburg', 'edimburgo', 'edinburgh', 'escocia', 'escòcia', 'regne unit', 'reino unido', 'uk'], url: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['dublin', 'dublín', 'irlanda', 'ireland'], url: 'https://images.unsplash.com/photo-1549918864-48ac978761a4?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['roma', 'rome'], url: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['venecia', 'venècia', 'venice'], url: 'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['florencia', 'florència', 'florence', 'toscana'], url: 'https://images.unsplash.com/photo-1541370976299-4d24ebbc9077?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['milan', 'milà', 'milán', 'napoli', 'nàpols', 'nápoles', 'amalfi', 'italia', 'itàlia', 'sicilia', 'sicília', 'palermo', 'aviano'], url: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['amsterdam', 'rotterdam', 'països baixos', 'paises bajos', 'holanda', 'brussel·les', 'bruselas', 'bruges', 'brujas', 'belgica', 'bèlgica'], url: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['berlin', 'berlín', 'alemanya', 'alemania', 'munich', 'múnic', 'hamburg'], url: 'https://images.unsplash.com/photo-1560969184-10fe8719e047?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['zurich', 'zúric', 'ginebra', 'suissa', 'suïssa', 'suiza', 'alps', 'alpes'], url: 'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['viena', 'vienna', 'austria', 'àustria', 'praga', 'prague', 'txequia', 'budapest', 'hongria', 'hungría'], url: 'https://images.unsplash.com/photo-1516550893923-42d28e5677af?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['copenhaguen', 'copenhague', 'copenhagen', 'dinamarca'], url: 'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['estocolm', 'estocolmo', 'stockholm', 'suècia', 'suecia', 'oslo', 'noruega', 'helsinki', 'finlandia', 'finlàndia', 'islandia', 'islàndia', 'reikiavik'], url: 'https://images.unsplash.com/photo-1476610182048-b716b8518aae?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['atenes', 'atenas', 'athens', 'gretsia', 'grecia', 'santorini', 'mykonos', 'creta', 'croacia', 'croàcia', 'dubrovnik'], url: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['estambul', 'istanbul', 'turquia', 'turquía', 'capadocia'], url: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=1400&q=85' },
+
+      // Amèrica
+      { keys: ['nova york', 'nueva york', 'new york', 'nyc', 'manhattan', 'brooklyn'], url: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['los angeles', 'san francisco', 'california', 'califòrnia', 'miami', 'chicago', 'boston', 'las vegas', 'estats units', 'estados unidos', 'usa', 'toronto', 'vancouver', 'montreal', 'canada', 'canadà'], url: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['rio de janeiro', 'río de janeiro', 'florianopolis', 'florianópolis', 'sao paulo', 'são paulo', 'salvador', 'brasil', 'brazil'], url: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['buenos aires', 'argentina', 'patagonia', 'patagònia', 'santiago', 'xile', 'chile', 'lima', 'cusco', 'peru', 'perú', 'bogota', 'medellin', 'colombia', 'colòmbia', 'mexico', 'méxico', 'mèxic', 'cancun', 'cancún', 'costa rica'], url: 'https://images.unsplash.com/photo-1589909279427-2f6919f7f519?auto=format&fit=crop&w=1400&q=85' },
+
+      // Àsia, Oceania i Àfrica
+      { keys: ['kyoto', 'kioto', 'tokyo', 'tokio', 'osaka', 'japo', 'japó', 'japón', 'japan'], url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['seul', 'seúl', 'seoul', 'corea', 'busan'], url: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['bangkok', 'tailandia', 'tailàndia', 'thailand', 'bali', 'indonesia', 'indonèsia', 'vietnam', 'hanoi', 'singapur', 'singapore'], url: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['dubai', 'abu dhabi', 'emirats', 'emiratos'], url: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['sidney', 'sydney', 'melbourne', 'australia', 'austràlia', 'nova zelanda', 'nueva zelanda'], url: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=1400&q=85' },
+      { keys: ['marrakech', 'marruecos', 'marroc', 'morocco', 'fez', 'tanger', 'tànger', 'cairo', 'el caire', 'egipte', 'egipto'], url: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1400&q=85' }
     ];
 
-    function getTripImage(dest = '') {
-      const d = dest.toLowerCase();
-      if (d.includes('lisboa') || d.includes('porto') || d.includes('portugal')) return PHOTO_POOL[4];
-      if (d.includes('copenhag') || d.includes('dinamarca')) return PHOTO_POOL[1];
-      if (d.includes('kyoto') || d.includes('tokyo') || d.includes('japo')) return PHOTO_POOL[2];
-      if (d.includes('mallorca') || d.includes('menorca') || d.includes('balears')) return PHOTO_POOL[3];
-      if (d.includes('paris') || d.includes('frança')) return PHOTO_POOL[5];
-      let hash = 0;
-      for (let i = 0; i < d.length; i++) hash = (hash + d.charCodeAt(i)) % PHOTO_POOL.length;
-      return PHOTO_POOL[hash];
+    function getTripImage(dest = '', title = '') {
+      const haystack = `${dest} ${title}`.toLowerCase();
+      for (const entry of DESTINATION_PHOTOS) {
+        if (entry.keys.some((key) => haystack.includes(key))) {
+          return entry.url;
+        }
+      }
+      return DEFAULT_PLANE_IMAGE;
     }
 
     function formatDate(value) {
@@ -1847,7 +1882,7 @@
 
         const photo = document.createElement('div');
         photo.className = 'trip-photo';
-        photo.style.backgroundImage = `url('${getTripImage(v.destinacio)}')`;
+        photo.style.backgroundImage = `url('${getTripImage(v.destinacio, v.titol)}')`;
 
         const tag = document.createElement('span');
         tag.className = 'destination-tag';
@@ -2025,7 +2060,7 @@
         const data = await apiRequest('GET', `/api/detall?viatge_id=${encodeURIComponent(viatgeId)}`);
         showView('detail');
 
-        document.getElementById('detail-banner').style.backgroundImage = `url('${getTripImage(data.viatge.destinacio)}')`;
+        document.getElementById('detail-banner').style.backgroundImage = `url('${getTripImage(data.viatge.destinacio, data.viatge.titol)}')`;
         document.getElementById('detail-destinacio').textContent = data.viatge.destinacio;
         document.getElementById('detail-titol').textContent = data.viatge.titol;
         document.getElementById('detail-dates').innerHTML = `${formatDate(data.viatge.data_inicial)} <b>→</b> ${formatDate(data.viatge.data_final)}`;
